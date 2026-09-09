@@ -12,9 +12,7 @@ import com.zamazor.market.modules.catalog.models.dto.OrderDto;
 import com.zamazor.market.modules.catalog.models.dto.ReserveLine;
 import com.zamazor.market.modules.catalog.models.entity.AddressComponent;
 import com.zamazor.market.modules.catalog.models.entity.Order;
-import com.zamazor.market.modules.catalog.models.entity.OrderItem;
 import com.zamazor.market.modules.catalog.models.entity.OrderStatus;
-import com.zamazor.market.modules.catalog.models.mapper.OrderItemMapper;
 import com.zamazor.market.modules.catalog.models.mapper.OrderMapper;
 import com.zamazor.market.modules.catalog.repository.CartRepository;
 import com.zamazor.market.modules.catalog.repository.OrderRepository;
@@ -43,7 +41,6 @@ public class OrderPaymentService {
 	private final OrderRepository orderRepository;
 	private final ProductRepository productRepository;
 	private final OrderMapper orderMapper;
-	private final OrderItemMapper orderItemMapper;
 	private final ApplicationEventPublisher publisher;
 	private final PaymentService paymentService;
 	private final CartRepository cartRepository;
@@ -100,7 +97,7 @@ public class OrderPaymentService {
 			public void afterCommit() {
 				try {
 					Session session = paymentService.createCheckoutSession(savedOrder);
-					publisher.publishEvent(new OrderPlacedEvent(savedOrder, user, session.getUrl()));
+					publisher.publishEvent(new OrderPlacedEvent(savedOrder, session.getUrl()));
 				} catch (Exception e) {
 					log.error("Post-commit checkout finalization failed for order {}", savedOrder.getId(), e);
 				}
@@ -128,11 +125,9 @@ public class OrderPaymentService {
 
 		// Order reloaded fresh after the bulk transition (context was cleared).
 //		var order = orderRepository.findById(orderId).orElseThrow();
-		var user = order.getUser();
 		var lineItems = order.getItems().stream()
 				.map(item -> new ReserveLine(item.getProductId(), item.getQuantity()))
 				.toList();
-		var items = lineItems.stream().map(li -> orderItemMapper.toDto(findItem(order, li))).toList();
 
 		for (ReserveLine line : lineItems) {
 			if (productRepository.confirmReservation(line.productId(), line.quantity()) == 0) {
@@ -141,8 +136,7 @@ public class OrderPaymentService {
 			}
 		}
 
-		publisher.publishEvent(new OrderStatusChangedEvent(
-				orderId, user.getEmail(), OrderStatus.CONFIRMED, order.getTotal(), items));
+		publisher.publishEvent(new OrderStatusChangedEvent(order));
 		return orderMapper.toDto(order);
 	}
 
@@ -161,11 +155,5 @@ public class OrderPaymentService {
 
 		Session session = paymentService.createCheckoutSession(savedOrder);
 		return paymentMapper.toDto(session);
-	}
-
-	private OrderItem findItem(Order order, ReserveLine line) {
-		return order.getItems().stream()
-				.filter(it -> it.getProductId().equals(line.productId()))
-				.findFirst().orElseThrow();
 	}
 }

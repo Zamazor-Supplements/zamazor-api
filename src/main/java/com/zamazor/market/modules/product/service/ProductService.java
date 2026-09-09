@@ -1,5 +1,7 @@
 package com.zamazor.market.modules.product.service;
 
+import com.zamazor.market.modules.dashboard.events.AdminEvent;
+import com.zamazor.market.modules.dashboard.service.AdminSseService;
 import com.zamazor.market.modules.product.exception.CategoryNotFoundException;
 import com.zamazor.market.modules.product.exception.ProductNotFoundException;
 import com.zamazor.market.shared.api.PageResponse;
@@ -37,6 +39,7 @@ public class ProductService {
 	private final StoreRepository storeRepository;
 	private final ProductMapper productMapper;
 	private final MediaStoragePort mediaStorage;
+	private final AdminSseService adminSseService;
 
 	@Transactional
 	public ProductDto create(CreateProductRequest request, @NonNull MultipartFile image) throws IOException {
@@ -52,7 +55,16 @@ public class ProductService {
 		product.setImageUrl(metadata.secureUrl());
 		product.setImagePublicId(metadata.publicId());
 
-		return productMapper.toDto(productRepository.save(product));
+		var savedProduct = productRepository.save(product);
+		var eventId = "evt_%s".formatted(UUID.randomUUID());
+
+		adminSseService.publish(new AdminEvent(
+				eventId,
+				"product.created",
+				productMapper.toDto(savedProduct)
+		));
+
+		return productMapper.toDto(savedProduct);
 	}
 
 	public PageResponse<ProductDto> getByCategory(UUID categoryId, Pageable pageable) {
@@ -110,7 +122,16 @@ public class ProductService {
 			product.setImagePublicId(metadata.publicId());
 		}
 
-		return productMapper.toDto(product);
+		var savedProduct = productRepository.save(product);
+		var eventId = "evt_%s".formatted(UUID.randomUUID());
+
+		adminSseService.publish(new AdminEvent(
+				eventId,
+				"product.updated",
+				productMapper.toDto(savedProduct)
+		));
+
+		return productMapper.toDto(savedProduct);
 	}
 
 	@Transactional
@@ -118,6 +139,15 @@ public class ProductService {
 		if (!productRepository.existsById(id)) {
 			throw new ProductNotFoundException(id);
 		}
+
+		var eventId = "evt_%s".formatted(UUID.randomUUID());
+
+		adminSseService.publish(new AdminEvent(
+				eventId,
+				"product.deleted",
+				id
+		));
+
 		productRepository.deleteById(id);
 	}
 }

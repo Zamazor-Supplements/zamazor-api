@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.zamazor.market.mail.event.OrderStatusChangedEvent;
 import com.zamazor.market.modules.billing.models.entity.OrderRefund;
 import com.zamazor.market.modules.billing.models.entity.RefundStatus;
 import com.zamazor.market.modules.billing.repository.OrderRefundRepository;
@@ -17,6 +18,7 @@ import com.zamazor.market.modules.catalog.repository.OrderRepository;
 import com.zamazor.market.modules.product.repository.ProductRepository;
 import com.zamazor.market.payment.exception.WebhookMismatchException;
 import com.zamazor.market.payment.util.StripeObjects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class RefundEventHandler implements StripeEventHandler {
 	private final OrderRefundRepository refunds;
 	private final Clock clock;
 	private final ProductRepository productRepository;
+	private final ApplicationEventPublisher publisher;
 
 	@Override
 	public Set<String> eventTypes() {
@@ -73,6 +76,7 @@ public class RefundEventHandler implements StripeEventHandler {
 
 				log.info("Refund {} succeeded — order {} refunded {} minor units",
 						refund.getId(), order.getId(), succeeded);
+				publisher.publishEvent(new OrderStatusChangedEvent(order));
 			}
 			case "failed", "canceled" -> {
 				record.markFailed(refund.getFailureReason());

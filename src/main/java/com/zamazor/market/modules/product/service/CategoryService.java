@@ -1,5 +1,7 @@
 package com.zamazor.market.modules.product.service;
 
+import com.zamazor.market.modules.dashboard.events.AdminEvent;
+import com.zamazor.market.modules.dashboard.service.AdminSseService;
 import com.zamazor.market.modules.product.exception.CategoryNotFoundException;
 import com.zamazor.market.modules.product.exception.CategoryAlreadyExistsException;
 import com.zamazor.market.modules.product.models.dto.CategoryDto;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class CategoryService {
 	private final CategoryRepository categoryRepository;
 	private final CategoryMapper categoryMapper;
+	private final AdminSseService adminSseService;
 
 	public CategoryDto create(CategoryRequest request) {
 		if (categoryRepository.existsByLabel(request.label())) {
@@ -25,7 +28,16 @@ public class CategoryService {
 		}
 		var category = new Category();
 		category.setLabel(request.label());
-		return categoryMapper.toDto(categoryRepository.save(category));
+		var savedCategory = categoryRepository.save(category);
+		var eventId = "evt_%s".formatted(UUID.randomUUID());
+
+		adminSseService.publish(new AdminEvent(
+				eventId,
+				"category.created",
+				categoryMapper.toDto(savedCategory)
+		));
+
+		return categoryMapper.toDto(savedCategory);
 	}
 
 	public List<CategoryDto> getAll() {
@@ -41,13 +53,30 @@ public class CategoryService {
 		}
 
 		category.setLabel(request.label());
-		return categoryMapper.toDto(categoryRepository.save(category));
+		var savedCategory = categoryRepository.save(category);
+		var eventId = "evt_%s".formatted(UUID.randomUUID());
+
+		adminSseService.publish(new AdminEvent(
+				eventId,
+				"category.updated",
+				categoryMapper.toDto(savedCategory)
+		));
+
+		return categoryMapper.toDto(savedCategory);
 	}
 
 	public void delete(UUID id) {
 		if (!categoryRepository.existsById(id)) {
 			throw new CategoryNotFoundException(id);
 		}
+		var eventId = "evt_%s".formatted(UUID.randomUUID());
+
+		adminSseService.publish(new AdminEvent(
+				eventId,
+				"category.deleted",
+				id
+		));
+
 		categoryRepository.deleteById(id);
 	}
 }

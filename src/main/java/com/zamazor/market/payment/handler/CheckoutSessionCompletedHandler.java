@@ -11,7 +11,6 @@ import com.stripe.model.checkout.Session;
 import com.zamazor.market.mail.event.OrderStatusChangedEvent;
 import com.zamazor.market.modules.catalog.models.dto.ReserveLine;
 import com.zamazor.market.modules.catalog.models.entity.Order;
-import com.zamazor.market.modules.catalog.models.mapper.OrderItemMapper;
 import com.zamazor.market.modules.catalog.repository.OrderRepository;
 import com.zamazor.market.modules.product.repository.ProductRepository;
 import com.zamazor.market.payment.exception.WebhookMismatchException;
@@ -31,7 +30,6 @@ public class CheckoutSessionCompletedHandler implements StripeEventHandler {
 	private final OrderRepository orderRepository;
 	private final Clock clock;
 	private final ApplicationEventPublisher publisher;
-	private final OrderItemMapper orderItemMapper;
 	private final ProductRepository productRepository;
 
 	@Override
@@ -100,10 +98,7 @@ public class CheckoutSessionCompletedHandler implements StripeEventHandler {
 			}
 		}
 
-		var user = order.getUser();
-		var items = order.getItems().stream().map(orderItemMapper::toDto).toList();
-
-		publisher.publishEvent(new OrderStatusChangedEvent(order.getId(), user.getEmail(), order.getStatus(), order.getTotal(), items));
+		publisher.publishEvent(new OrderStatusChangedEvent(order));
 		log.info("Order {} marked PAID via Stripe event {}", order.getId(), event.getId());
 		return order.getId();
 	}

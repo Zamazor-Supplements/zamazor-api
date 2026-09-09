@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.zamazor.market.mail.event.OrderStatusChangedEvent;
 import com.zamazor.market.modules.catalog.models.dto.StockRestoreDto;
 import com.zamazor.market.modules.catalog.models.entity.Order;
 import com.zamazor.market.modules.catalog.repository.OrderRepository;
 import com.zamazor.market.modules.product.repository.ProductRepository;
 import com.zamazor.market.payment.exception.WebhookMismatchException;
 import com.zamazor.market.payment.util.StripeObjects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class ChargeRefundedEventHandler implements StripeEventHandler {
 	private final OrderRepository orders;
 	private final Clock clock;
 	private final ProductRepository productRepository;
+	private final ApplicationEventPublisher publisher;
 
 	@Override
 	public Set<String> eventTypes() {
@@ -67,6 +70,7 @@ public class ChargeRefundedEventHandler implements StripeEventHandler {
 
 		log.info("Charge {} refunded {} — order {} refunded amount reconciled",
 				charge.getId(), charge.getAmountRefunded(), order.getId());
+		publisher.publishEvent(new OrderStatusChangedEvent(order));
 		return order.getId();
 	}
 }

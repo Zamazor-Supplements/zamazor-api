@@ -4,7 +4,6 @@ import com.zamazor.market.mail.event.OrderStatusChangedEvent;
 import com.zamazor.market.modules.billing.models.entity.PaymentStatus;
 import com.zamazor.market.modules.catalog.exception.*;
 import com.zamazor.market.modules.catalog.models.dto.*;
-import com.zamazor.market.modules.catalog.models.mapper.OrderItemMapper;
 import com.zamazor.market.payment.exception.PaymentGatewayException;
 import com.zamazor.market.payment.service.PaymentService;
 import com.zamazor.market.shared.api.PageResponse;
@@ -22,8 +21,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j
@@ -33,15 +30,12 @@ import java.util.UUID;
 public class OrderService {
 	private final OrderRepository orderRepository;
 	private final OrderMapper orderMapper;
-	private final OrderItemMapper orderItemMapper;
 	private final OrderFulfillmentService orderFulfillmentService;
 	private final ApplicationEventPublisher publisher;
 	private final PaymentService paymentService;
-	private final Clock clock;
 
 	public PageResponse<OrderDto> getAll(String userFullName, OrderStatus status, Pageable pageable) {
 		Specification<Order> spec = OrderSpecifications.createSpec(userFullName, status);
-
 		Page<Order> orderPage = orderRepository.findAll(spec, pageable);
 		return new PageResponse<>(orderPage.map(orderMapper::toDto));
 	}
@@ -61,17 +55,18 @@ public class OrderService {
 	public OrderDto changeStatus(UUID orderId, OrderStatus newStatus) {
 		var order = orderRepository.findById(orderId)
 				.orElseThrow(() -> new OrderNotFoundException(orderId));
-		Instant now = Instant.now(clock);
 
-		if (order.getStatus() == newStatus) return orderMapper.toDto(order);
+		if (order.getStatus() == newStatus) {
+			return orderMapper.toDto(order);
+		}
 
 		switch (newStatus) {
-			case CANCELED -> orderFulfillmentService.cancelOrder(order, now, PaymentStatus.CANCELED);
-			case REFUNDED -> orderFulfillmentService.refundOrder(order, now);
+			case CANCELED -> orderFulfillmentService.cancelOrder(order, PaymentStatus.CANCELED);
+			case REFUNDED -> orderFulfillmentService.refundOrder(order);
 			default -> order.transitionTo(newStatus);
 		}
 
-		publishStatusChangedEvent(order);
+		publisher.publishEvent(new OrderStatusChangedEvent(order));
 		return orderMapper.toDto(order);
 	}
 
@@ -84,10 +79,8 @@ public class OrderService {
 			return orderMapper.toDto(order);
 		}
 
-		Instant now = Instant.now(clock);
-		orderFulfillmentService.cancelOrder(order, now, targetPaymentStatus);
-
-		publishStatusChangedEvent(order);
+		orderFulfillmentService.cancelOrder(order, targetPaymentStatus);
+		publisher.publishEvent(new OrderStatusChangedEvent(order));
 		return orderMapper.toDto(order);
 	}
 
@@ -106,16 +99,5 @@ public class OrderService {
 		}
 
 		return orderMapper.toDto(order);
-	}
-
-	private void publishStatusChangedEvent(Order order) {
-		var items = order.getItems().stream().map(orderItemMapper::toDto).toList();
-		publisher.publishEvent(new OrderStatusChangedEvent(
-				order.getId(),
-				order.getUser().getEmail(),
-				order.getStatus(),
-				order.getTotal(),
-				items
-		));
 	}
 }
