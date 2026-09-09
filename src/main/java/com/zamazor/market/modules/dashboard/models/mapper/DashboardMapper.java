@@ -1,10 +1,7 @@
 package com.zamazor.market.modules.dashboard.models.mapper;
 
 import com.zamazor.market.modules.catalog.models.entity.Order;
-import com.zamazor.market.modules.dashboard.models.dto.CategoryAnalyticsDto;
-import com.zamazor.market.modules.dashboard.models.dto.CategoryProductCountProjection;
-import com.zamazor.market.modules.dashboard.models.dto.LowStockProductDto;
-import com.zamazor.market.modules.dashboard.models.dto.RecentOrderDto;
+import com.zamazor.market.modules.dashboard.models.dto.*;
 import com.zamazor.market.modules.product.models.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,7 +21,7 @@ public interface DashboardMapper {
 	@Mapping(target = "category", source = "category.label", defaultValue = "Uncategorized")
 	LowStockProductDto toLowStockProductDto(Product product);
 
-	CategoryAnalyticsDto toAnalyticsDto(CategoryProductCountProjection projection);
+	CategoryMetrics toAnalyticsDto(CategoryProductCountProjection projection);
 
-	List<CategoryAnalyticsDto> toAnalyticsDtoList(List<CategoryProductCountProjection> projections);
+	List<CategoryMetrics> toAnalyticsDtoList(List<CategoryProductCountProjection> projections);
 }

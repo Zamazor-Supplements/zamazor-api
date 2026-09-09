@@ -1,6 +1,6 @@
 package com.zamazor.market.modules.dashboard.models.dto;
 
-public record CategorySummaryDto(
+public record CategorySummary(
 		String category,
 		long count
 ) {
