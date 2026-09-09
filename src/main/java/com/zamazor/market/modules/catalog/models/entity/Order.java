@@ -2,9 +2,9 @@ package com.zamazor.market.modules.catalog.models.entity;
 
 import com.zamazor.market.modules.billing.models.entity.PaymentStatus;
 import com.zamazor.market.modules.catalog.exception.IllegalOrderTransitionException;
+import com.zamazor.market.modules.catalog.exception.OrderCancellationException;
+import com.zamazor.market.modules.catalog.exception.OrderRefundException;
 import com.zamazor.market.modules.catalog.models.dto.StockRestoreDto;
-import com.zamazor.market.modules.product.exception.OrderCancellationException;
-import com.zamazor.market.modules.product.exception.OrderRefundException;
 import com.zamazor.market.modules.user.models.entity.User;
 import com.zamazor.market.payment.config.OrderPolicyProperties;
 import com.zamazor.market.shared.model.dto.PricingResult;
@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.BatchSize;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -42,9 +43,11 @@ public class Order {
 	@Column(name = "payment_status", nullable = false)
 	private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
+	@Nullable
 	@Column(name = "stripe_checkout_session_id", unique = true)
 	private String stripeCheckoutSessionId;
 
+	@Nullable
 	@Column(name = "stripe_payment_intent_id")
 	private String stripePaymentIntentId;
 
@@ -100,7 +103,7 @@ public class Order {
 
 	public void markPaid(String paymentIntentId, Instant now) {
 		if (status == OrderStatus.CONFIRMED) return;
-		OrderStateMachine.verify(status, OrderStatus.CANCELED);
+		OrderStateMachine.verify(status, OrderStatus.CONFIRMED);
 
 		this.status = OrderStatus.CONFIRMED;
 		this.paymentStatus = PaymentStatus.PAID;

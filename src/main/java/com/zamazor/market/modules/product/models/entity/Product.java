@@ -1,6 +1,5 @@
 package com.zamazor.market.modules.product.models.entity;
 
-import com.zamazor.market.modules.catalog.models.entity.CartItem;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SoftDelete;
@@ -11,8 +10,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -59,10 +56,6 @@ public class Product {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "category_id", nullable = false)
 	private Category category;
-
-	@Builder.Default
-	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-	private List<CartItem> cartItems = new ArrayList<>();
 
 	@Version
 	@Builder.Default
