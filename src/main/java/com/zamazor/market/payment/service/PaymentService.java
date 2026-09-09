@@ -12,6 +12,7 @@ import com.zamazor.market.modules.catalog.repository.OrderRepository;
 import com.zamazor.market.payment.exception.PaymentGatewayException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -192,16 +193,21 @@ public class PaymentService {
 		}
 	}
 
-	public Session expireCheckoutSession(String sessionId) {
+	public @Nullable Session expireCheckoutSession(String sessionId) {
 		try {
 			Session session = Session.retrieve(sessionId);
-			return session.expire();
+			if ("open".equals(session.getStatus())) {
+				return session.expire();
+			}
+			return null;
 		} catch (StripeException e) {
 			throw new RuntimeException("Failed to expire Stripe checkout session: " + e.getMessage(), e);
 		}
 	}
 
-	public boolean isSessionUnPaid(String stripeSessionId) {
+	public boolean isSessionUnPaid(@Nullable String stripeSessionId) {
+		if (stripeSessionId == null || stripeSessionId.isBlank()) return true;
+
 		try {
 			Session session = Session.retrieve(stripeSessionId);
 			return !"complete".equals(session.getStatus()) || !"paid".equals(session.getPaymentStatus());
