@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecificationExecutor<Order> {
-	@EntityGraph(attributePaths = {"items"})
+	@EntityGraph(attributePaths = {"items", "user"})
 	@NonNull Page<Order> findAll(@NonNull Specification<Order> specification, @NonNull Pageable pageable);
 
 	@EntityGraph(attributePaths = {"items"})
@@ -25,8 +25,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
 	@EntityGraph(attributePaths = {"items", "user"})
 	@NonNull Optional<Order> findById(@NonNull UUID id);
 
+	@EntityGraph(attributePaths = {"items", "user"})
 	Optional<Order> findByStripeCheckoutSessionId(String stripeCheckoutSessionId);
 
+	@EntityGraph(attributePaths = {"items", "user"})
 	Optional<Order> findByStripePaymentIntentId(String stripePaymentIntentId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -53,7 +55,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
 			 FOR UPDATE SKIP LOCKED
 			 LIMIT :batch
 			""", nativeQuery = true)
-	List<Order> findExpiredPending(@Param("cutoff") Instant cutoff, @Param("batch") int batch);
+	List<Order> findOrdersEligibleForCancellation(@Param("cutoff") Instant cutoff, @Param("batch") int batch);
 
 	boolean existsByIdAndUserId(UUID id, UUID userId);
 }

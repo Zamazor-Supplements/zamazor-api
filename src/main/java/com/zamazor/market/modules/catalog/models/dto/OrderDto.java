@@ -1,6 +1,7 @@
 package com.zamazor.market.modules.catalog.models.dto;
 
 import com.zamazor.market.modules.catalog.models.entity.OrderStatus;
+import com.zamazor.market.modules.user.models.dto.UserDto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -20,7 +21,7 @@ public record OrderDto(
 		String shippingCity,
 		String shippingStreet,
 		String phone,
-		UserMinDto user,
+		UserDto user,
 		Instant createdAt
 ) {
 }
