@@ -1,4 +1,4 @@
-package com.zamazor.market.modules.product.models.dto;
+package com.zamazor.market.modules.product.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

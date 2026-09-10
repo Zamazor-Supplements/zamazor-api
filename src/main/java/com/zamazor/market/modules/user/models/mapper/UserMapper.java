@@ -17,5 +17,6 @@ public interface UserMapper {
 	@Mapping(target = "cart", ignore = true)
 	@Mapping(target = "orders", ignore = true)
 	@Mapping(target = "address", ignore = true)
+	@Mapping(target = "wishlists", ignore = true)
 	User toEntity(RegisterRequest request);
 }

@@ -10,7 +10,10 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "order_items")
+@Table(
+		name = "order_items",
+		uniqueConstraints = @UniqueConstraint(columnNames = {"order_id", "product_id"})
+)
 public class OrderItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

@@ -22,7 +22,7 @@ public class CloudinaryStorageAdapter implements MediaStoragePort {
 			byte[] fileBytes = inputStream.readAllBytes();
 
 			Map<?, ?> uploadResult = cloudinary.uploader().upload(fileBytes, ObjectUtils.asMap(
-					"folder", "zamazor/" + folderPath,
+					"folder", "zamazor/%s".formatted(folderPath),
 					"use_filename", true,
 					"unique_filename", true,
 					"overwrite", false
@@ -35,7 +35,7 @@ public class CloudinaryStorageAdapter implements MediaStoragePort {
 			);
 
 		} catch (Exception e) {
-			throw new MediaStorageException("Failed to upload image file: " + fileName, e);
+			throw new MediaStorageException("Failed to upload image file: %s".formatted(fileName), e);
 		}
 	}
 
@@ -44,7 +44,7 @@ public class CloudinaryStorageAdapter implements MediaStoragePort {
 		try {
 			cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
 		} catch (Exception e) {
-			throw new MediaStorageException("Failed to delete asset with public ID: " + publicId, e);
+			throw new MediaStorageException("Failed to delete asset with public ID: %s".formatted(publicId), e);
 		}
 	}
 }

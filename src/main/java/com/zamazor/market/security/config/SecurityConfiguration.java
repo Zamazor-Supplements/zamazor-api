@@ -4,6 +4,7 @@ import com.zamazor.market.config.ApplicationProperties;
 import com.zamazor.market.security.filter.JwtAuthenticationFilter;
 import com.zamazor.market.modules.auth.util.CookieUtility;
 import com.zamazor.market.security.handler.CustomLogoutSuccessHandler;
+import com.zamazor.market.security.handler.SecurityExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,16 +35,24 @@ public class SecurityConfiguration {
 	private final ApplicationProperties applicationProperties;
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityExceptionHandler securityExceptionHandler) {
 		return http
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(Customizer.withDefaults())
-				.authorizeHttpRequests(auth ->
-						auth.requestMatchers("/auth/**").permitAll()
-								.requestMatchers("/auth/me").authenticated()
-								.requestMatchers(HttpMethod.GET, "/products/**").permitAll()
-								.requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
-								.anyRequest().authenticated())
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+						.requestMatchers("/webhooks/**").permitAll()
+						.requestMatchers("/auth/me").authenticated()
+						.requestMatchers("/auth/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/products/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/products/bulk").permitAll()
+						.requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
+						.anyRequest().authenticated()
+				)
+				.exceptionHandling(exceptions -> exceptions
+						.authenticationEntryPoint(securityExceptionHandler)
+						.accessDeniedHandler(securityExceptionHandler)
+				)
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				)
@@ -60,12 +69,21 @@ public class SecurityConfiguration {
 	}
 
 	@Bean
-	CorsConfigurationSource corsConfigurationSource() {
+	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of(applicationProperties.frontendUrl()));
 		configuration.setAllowCredentials(true);
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+
+		configuration.setAllowedHeaders(List.of(
+				"Authorization",
+				"Content-Type",
+				"X-Requested-With",
+				"Accept",
+				"Origin",
+				"skip_zrok_interstitial"
+		));
+
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;

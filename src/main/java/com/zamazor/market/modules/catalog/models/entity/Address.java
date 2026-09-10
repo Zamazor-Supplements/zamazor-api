@@ -2,13 +2,15 @@ package com.zamazor.market.modules.catalog.models.entity;
 
 import com.zamazor.market.modules.user.models.entity.User;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "addresses")
-@Data
+@Getter
+@Setter
 public class Address {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

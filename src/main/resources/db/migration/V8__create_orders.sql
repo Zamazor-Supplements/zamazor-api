@@ -1,0 +1,25 @@
+CREATE TABLE orders
+(
+    id                         UUID           NOT NULL,
+    status                     VARCHAR(255)   NOT NULL,
+    payment_status             VARCHAR(255)   NOT NULL,
+    stripe_checkout_session_id VARCHAR(255),
+    stripe_payment_intent_id   VARCHAR(255),
+    payment_attempt_count      INTEGER        NOT NULL,
+    subtotal                   DECIMAL(10, 2) NOT NULL,
+    tax                        DECIMAL(10, 2) NOT NULL,
+    shipping_cost              DECIMAL(10, 2) NOT NULL,
+    discount                   DECIMAL(10, 2) NOT NULL,
+    total                      DECIMAL(10, 2) NOT NULL,
+    refunded_amount            DECIMAL(10, 2) NOT NULL,
+    refunded_at                TIMESTAMP(6) WITHOUT TIME ZONE,
+    user_id                    UUID           NOT NULL,
+    created_at                 TIMESTAMP(6) WITHOUT TIME ZONE,
+    paid_at                    TIMESTAMP(6) WITHOUT TIME ZONE,
+    version                    BIGINT,
+    shipping_country           VARCHAR(255),
+    shipping_city              VARCHAR(255),
+    shipping_street            VARCHAR(255),
+    recipient_phone            VARCHAR(255),
+    CONSTRAINT pk_orders PRIMARY KEY (id)
+);

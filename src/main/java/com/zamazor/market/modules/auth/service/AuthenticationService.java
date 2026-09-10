@@ -1,7 +1,9 @@
 package com.zamazor.market.modules.auth.service;
 
+import com.zamazor.market.config.ApplicationProperties;
+import com.zamazor.market.mail.service.EmailService;
 import com.zamazor.market.security.crypto.JwtService;
-import com.zamazor.market.modules.auth.exception.EmailAlreadyExistsException;
+import com.zamazor.market.modules.auth.exception.EmailAlreadyInUseException;
 import com.zamazor.market.modules.auth.exception.UnauthorizedException;
 import com.zamazor.market.modules.auth.models.dto.*;
 import com.zamazor.market.modules.user.models.mapper.UserMapper;
@@ -18,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Year;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -28,15 +32,20 @@ public class AuthenticationService {
 	private final UserMapper userMapper;
 	private final AuthenticationManager authenticationManager;
 	private final JwtService jwtService;
+	private final EmailService emailService;
+	private final ApplicationProperties application;
 
 	@Transactional
 	public UserDto register(RegisterRequest request) {
 		if (userRepository.existsByEmail(request.email())) {
-			throw new EmailAlreadyExistsException("An account with this email already exists");
+			throw new EmailAlreadyInUseException("An account with this email already in use");
 		}
 		var user = userMapper.toEntity(request);
 		user.setPassword(Objects.requireNonNull(passwordEncoder.encode(request.password())));
 		user.setIsAdmin(false);
+
+		sendRegistrationSuccessEmail(user.getEmail());
+
 		return userMapper.toDto(userRepository.save(user));
 	}
 
@@ -48,8 +57,8 @@ public class AuthenticationService {
 			throw new BadCredentialsException("Invalid Credentials");
 		}
 		var userDto = userMapper.toDto(user);
-		var accessToken = jwtService.generateAccessToken(user);
-		var refreshToken = jwtService.generateRefreshToken(user);
+		String accessToken = jwtService.generateAccessToken(user);
+		String refreshToken = jwtService.generateRefreshToken(user);
 
 		return new AuthenticationResult(refreshToken, accessToken, userDto);
 	}
@@ -61,7 +70,7 @@ public class AuthenticationService {
 
 		try {
 			String email = jwtService.extractRefreshUsername(refreshToken);
-			User user = userRepository.findByEmail(email)
+			var user = userRepository.findByEmail(email)
 					.orElseThrow(() -> new UnauthorizedException("User not found"));
 
 			if (!jwtService.isRefreshTokenValid(refreshToken, user)) {
@@ -86,5 +95,22 @@ public class AuthenticationService {
 		}
 
 		return userMapper.toDto(user);
+	}
+
+	private void sendRegistrationSuccessEmail(String to) {
+		var link = "%s/login".formatted(application.frontendUrl());
+
+		emailService.sendHtmlEmail(
+				to,
+				"Account Registration Successful!",
+				"registration-success",
+				Map.of(
+						"appName", application.name(),
+						"loginUrl", link,
+						"supportEmail", application.supportEmail(),
+						"supportPhone", application.supportPhone(),
+						"year", Year.now().getValue()
+				)
+		);
 	}
 }

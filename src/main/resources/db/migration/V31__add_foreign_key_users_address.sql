@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD CONSTRAINT FK_USERS_ON_ADDRESS FOREIGN KEY (address_id) REFERENCES addresses (id);

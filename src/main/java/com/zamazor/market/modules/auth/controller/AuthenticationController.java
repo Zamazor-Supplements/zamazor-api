@@ -25,7 +25,7 @@ public class AuthenticationController {
 
 	@PostMapping("/register")
 	public ResponseEntity<UserDto> register(@RequestBody @Valid RegisterRequest request, UriComponentsBuilder uriBuilder) {
-		var response = authenticationService.register(request);
+		UserDto response = authenticationService.register(request);
 		var uri = uriBuilder.path("/users/{id}").buildAndExpand(response.id()).toUri();
 		return ResponseEntity.created(uri).body(response);
 	}
@@ -55,5 +55,4 @@ public class AuthenticationController {
 	public ResponseEntity<UserDto> me() {
 		return ResponseEntity.ok(authenticationService.getCurrentUser());
 	}
-
 }

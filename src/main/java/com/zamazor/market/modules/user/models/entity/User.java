@@ -5,10 +5,7 @@ import com.zamazor.market.modules.catalog.models.entity.Cart;
 import com.zamazor.market.modules.catalog.models.entity.Order;
 import com.zamazor.market.modules.wishlist.models.entity.Wishlist;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,7 +16,8 @@ import java.util.List;
 import java.util.UUID;
 
 @NullMarked
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -77,4 +75,20 @@ public class User implements UserDetails {
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Wishlist> wishlists;
+
+	public void setCart(Cart cart) {
+		this.cart = cart;
+
+		if (cart.getUser() != null) {
+			cart.setUser(this);
+		}
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+
+		if (address.getUser() != null) {
+			address.setUser(this);
+		}
+	}
 }

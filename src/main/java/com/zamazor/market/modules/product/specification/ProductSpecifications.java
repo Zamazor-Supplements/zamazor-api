@@ -1,9 +1,6 @@
 package com.zamazor.market.modules.product.specification;
 
-import com.zamazor.market.modules.product.models.entity.Category;
 import com.zamazor.market.modules.product.models.entity.Product;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,8 +26,7 @@ public class ProductSpecifications {
 			}
 
 			if (categoryId != null) {
-				Join<Product, Category> categoryJoin = root.join("category", JoinType.LEFT);
-				predicates.add(criteriaBuilder.equal(categoryJoin.get("id"), categoryId));
+				predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
 			}
 
 			if (minPrice != null) {

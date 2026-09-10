@@ -21,6 +21,7 @@ public interface ProductMapper {
 	@Mapping(target = "cartItems", ignore = true)
 	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "modifiedAt", ignore = true)
 	Product toEntity(CreateProductRequest request);
 
 	@Mapping(target = "id", ignore = true)
@@ -32,5 +33,6 @@ public interface ProductMapper {
 	@Mapping(target = "cartItems", ignore = true)
 	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "modifiedAt", ignore = true)
 	void update(UpdateProductRequest request, @MappingTarget Product product);
 }

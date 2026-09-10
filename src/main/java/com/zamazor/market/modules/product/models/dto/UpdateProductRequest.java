@@ -13,4 +13,5 @@ public record UpdateProductRequest(
 		@Nullable @Positive BigDecimal price,
 		@Nullable @Positive Integer stockQuantity,
 		@Nullable UUID categoryId
-) { }
+) {
+}

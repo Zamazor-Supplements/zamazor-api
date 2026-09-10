@@ -4,6 +4,7 @@ import com.zamazor.market.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -37,15 +38,22 @@ public class ApplicationConfiguration {
 	}
 
 	@Bean
-	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
-		authProvider.setPasswordEncoder(passwordEncoder());
-
+	public AuthenticationProvider authenticationProvider(
+			UserDetailsService userDetailsService,
+			PasswordEncoder passwordEncoder
+	) {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder);
 		return authProvider;
 	}
 
 	@Bean
 	public Clock clock() {
 		return Clock.systemDefaultZone();
+	}
+
+	@Bean
+	public SortHandlerMethodArgumentResolverCustomizer sortCustomizer() {
+		return resolver -> resolver.setPropertyDelimiter(",");
 	}
 }

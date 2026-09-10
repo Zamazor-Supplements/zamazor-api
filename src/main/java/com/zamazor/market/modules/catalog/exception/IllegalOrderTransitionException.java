@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
-public class IllegalOrderStateException extends RuntimeException {
-	public IllegalOrderStateException(String message) {
+public class IllegalOrderTransitionException extends RuntimeException {
+	public IllegalOrderTransitionException(String message) {
 		super(message);
 	}
 }

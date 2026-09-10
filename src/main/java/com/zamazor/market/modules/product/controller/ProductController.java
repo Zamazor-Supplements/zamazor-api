@@ -1,5 +1,6 @@
 package com.zamazor.market.modules.product.controller;
 
+import com.zamazor.market.modules.product.models.dto.BulkProductRequest;
 import com.zamazor.market.shared.api.PageResponse;
 import com.zamazor.market.modules.product.models.dto.CreateProductRequest;
 import com.zamazor.market.modules.product.models.dto.ProductDto;
@@ -44,13 +45,36 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getById(id));
 	}
 
-	@GetMapping
-	public ResponseEntity<PageResponse<ProductDto>> getAll(
+	@PostMapping("/bulk")
+	public ResponseEntity<PageResponse<ProductDto>> getAllByIds(
+			@Valid @RequestBody BulkProductRequest request,
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "10") Integer size
 	) {
 		Pageable pageable = PageRequest.of(page, size);
-		return ResponseEntity.ok(productService.getAll(pageable));
+		return ResponseEntity.ok(productService.bulk(request.ids(), pageable));
+	}
+
+	@GetMapping
+	public ResponseEntity<PageResponse<ProductDto>> getAll(
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) UUID categoryId,
+			@RequestParam(required = false) BigDecimal minPrice,
+			@RequestParam(required = false) BigDecimal maxPrice,
+			@RequestParam(value = "sort", defaultValue = "createdAt,desc") String sortParam,
+			Pageable pageable
+	) {
+		String[] sortParts = sortParam.contains(",") ? sortParam.split(",") : new String[]{sortParam, "desc"};
+		String sortProperty = sortParts[0].trim();
+		Sort.Direction direction = "asc".equalsIgnoreCase(sortParts[1].trim()) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+		Pageable sortedPageable = PageRequest.of(
+				pageable.getPageNumber(),
+				pageable.getPageSize(),
+				Sort.by(direction, sortProperty)
+		);
+
+		return ResponseEntity.ok(productService.search(q, categoryId, minPrice, maxPrice, sortedPageable));
 	}
 
 	@GetMapping("/category/{categoryId}")
@@ -65,7 +89,7 @@ public class ProductController {
 
 	@GetMapping("/search")
 	public ResponseEntity<PageResponse<ProductDto>> search(
-			@RequestParam String q,
+			@RequestParam(required = false) String q,
 			@RequestParam(required = false) UUID categoryId,
 			@RequestParam(required = false) BigDecimal minPrice,
 			@RequestParam(required = false) BigDecimal maxPrice,
@@ -79,7 +103,7 @@ public class ProductController {
 	public ResponseEntity<ProductDto> update(
 			@PathVariable UUID id,
 			@Valid @ModelAttribute UpdateProductRequest request,
-			@RequestPart MultipartFile image
+			@RequestPart(required = false) MultipartFile image
 	) throws IOException {
 		return ResponseEntity.ok(productService.update(id, request, image));
 	}

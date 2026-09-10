@@ -1,11 +1,10 @@
 package com.zamazor.market.modules.catalog.exception;
 
+import com.zamazor.market.shared.exception.DomainException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class AddressNotFoundException extends RuntimeException {
-	public AddressNotFoundException(String message) {
-		super(message);
+public class AddressNotFoundException extends DomainException {
+	public AddressNotFoundException() {
+		super("No default address set for this user", HttpStatus.NOT_FOUND, "Address Not Found");
 	}
 }

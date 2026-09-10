@@ -22,7 +22,7 @@ public class AddressController {
 			@AuthenticationPrincipal User user,
 			@Valid @RequestBody AddressRequest request
 	) {
-		AddressDto response = addressService.create(user, request);
+		AddressDto response = addressService.createOrUpdate(user, request);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

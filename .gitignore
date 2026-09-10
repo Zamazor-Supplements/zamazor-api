@@ -33,3 +33,11 @@ build/
 .vscode/
 .gitignore
 /src/docs
+
+### Environment & Secrets ###
+.env
+.env.*
+!.env.example
+
+### AI & Automation Tools ###
+/.claude/*

@@ -18,7 +18,8 @@ public class CookieUtility {
 				.secure(false)
 				.path("/")
 				.maxAge(jwtProperties.refresh().expiration().toSeconds())
-				.sameSite("Strict")
+				.sameSite("None")
+				.secure(true) // secure is required to use "SameSite=None"
 				.build();
 	}
 }

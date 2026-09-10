@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record ProductDto(
@@ -16,7 +16,7 @@ public record ProductDto(
 		@NotNull Integer stockQuantity,
 		@NotNull Integer reservedQuantity,
 		@NotNull CategoryDto category,
-		@NotNull LocalDateTime createdAt,
-		@NotNull LocalDateTime modifiedAt
+		@NotNull Instant createdAt,
+		@NotNull Instant modifiedAt
 ) {
 }

@@ -1,4 +1,4 @@
-package com.zamazor.market.modules.catalog.models.dto;
+package com.zamazor.market.modules.billing.models.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

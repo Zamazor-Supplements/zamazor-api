@@ -1,0 +1,2 @@
+ALTER TABLE order_refunds
+    ADD CONSTRAINT FK_ORDER_REFUNDS_ON_ORDER FOREIGN KEY (order_id) REFERENCES orders (id);

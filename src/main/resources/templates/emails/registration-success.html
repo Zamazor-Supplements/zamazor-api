@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Account Registration Successful</title>
+</head>
+<body
+		style="background-color: #f3f4f6; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1f2937; -webkit-font-smoothing: antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+       style="background-color: #f3f4f6; padding: 40px 16px;">
+	<tr>
+		<td align="center">
+			<table width="100%" max-width="570" cellpadding="0" cellspacing="0" role="presentation"
+			       style="max-width: 570px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-top: 6px solid #2563eb;">
+				<tr>
+					<td style="padding: 40px 32px;">
+						<h1 th:text="${appName}"
+						    style="font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 32px 0; letter-spacing: -0.025em;">
+							CompanyName
+						</h1>
+
+						<h2 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 16px 0; letter-spacing: -0.025em;">
+							Account Registration Successful
+						</h2>
+						<p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 28px 0;">
+							Your account has been successfully verified and registered. You can now log in to your
+							dashboard and start exploring our platform.
+						</p>
+
+						<table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 0 40px 0;">
+							<tr>
+								<td>
+									<a th:href="${loginUrl != null ? loginUrl : '#'}"
+									   style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">
+										Log In to Your Account
+									</a>
+								</td>
+							</tr>
+						</table>
+
+						<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+						       style="background-color: #f9fafb; border-radius: 12px; border: 1px solid #f3f4f6; margin: 0 0 32px 0;">
+							<tr>
+								<td style="padding: 20px;">
+									<p style="font-size: 14px; font-weight: 600; color: #374151; margin: 0 0 8px 0;">
+										Didn't make this request?
+									</p>
+									<p style="font-size: 14px; line-height: 1.5; color: #6b7280; margin: 0 0 16px 0;">
+										If you did not create this account, no action is needed, but we recommend
+										securing your credentials or contacting our team immediately:
+									</p>
+
+									<table cellpadding="0" cellspacing="0" role="presentation">
+										<tr>
+											<td style="font-size: 14px; color: #4b5563; padding-bottom: 6px; padding-right: 12px;">
+												<strong>Email:</strong></td>
+											<td style="font-size: 14px; padding-bottom: 6px;">
+												<a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}"
+												   style="color: #2563eb; text-decoration: none; font-weight: 500;">support@domain.com</a>
+											</td>
+										</tr>
+										<tr>
+											<td style="font-size: 14px; color: #4b5563; padding-right: 12px;"><strong>Phone:</strong>
+											</td>
+											<td style="font-size: 14px;">
+												<a th:href="'tel:' + ${supportPhone}" th:text="${supportPhone}"
+												   style="color: #2563eb; text-decoration: none; font-weight: 500;">+1
+													(555) 000-0000</a>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+
+						<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 0 0 24px 0;"/>
+						<p style="font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center; margin: 0;">
+							&copy; <span th:text="${year}">2026</span> <span th:text="${appName}">CompanyName</span>.
+							All rights reserved.
+						</p>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

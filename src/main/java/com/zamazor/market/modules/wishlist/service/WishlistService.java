@@ -1,19 +1,20 @@
 package com.zamazor.market.modules.wishlist.service;
 
+import com.zamazor.market.modules.product.models.entity.Product;
 import com.zamazor.market.modules.product.repository.ProductRepository;
 import com.zamazor.market.modules.user.models.entity.User;
 import com.zamazor.market.modules.wishlist.models.dto.WishlistDto;
 import com.zamazor.market.modules.wishlist.models.entity.Wishlist;
+import com.zamazor.market.modules.wishlist.models.mapper.WishlistItemMapper;
 import com.zamazor.market.modules.wishlist.models.mapper.WishlistMapper;
 import com.zamazor.market.modules.wishlist.repository.WishlistRepository;
-import com.zamazor.market.shared.api.PageResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -23,32 +24,65 @@ public class WishlistService {
 	private final WishlistRepository wishlistRepository;
 	private final ProductRepository productRepository;
 	private final WishlistMapper wishlistMapper;
+	private final WishlistItemMapper wishlistItemMapper;
 
-	public PageResponse<WishlistDto> getUserWishlist(UUID userId, Pageable pageable) {
-		Page<WishlistDto> wishlistPage = wishlistRepository.findByUserId(userId, pageable)
-				.map(wishlistMapper::toDto);
-		return new PageResponse<>(wishlistPage);
+	public WishlistDto getUserWishlist(UUID userId) {
+		List<Wishlist> wishlists = wishlistRepository.findByUserId(userId);
+		return wishlistMapper.toWishlistDto(wishlists);
 	}
 
 	@Transactional
-	public WishlistDto addToWishlist(User user, UUID productId) {
+	public WishlistDto mergeWishlist(User user, List<UUID> productIds) {
+		if (productIds == null || productIds.isEmpty())
+			return getUserWishlist(user.getId());
+
+		Set<UUID> existingProductIds = wishlistRepository
+				.findAllProductIdsByUserId(user.getId());
+		List<UUID> newProductIds = productIds.stream()
+				.filter(productId -> !existingProductIds.contains(productId))
+				.distinct()
+				.toList();
+
+		if (!newProductIds.isEmpty()) {
+			List<Product> productsToSave = productRepository.findAllById(newProductIds);
+
+			List<Wishlist> newWishlistEntities = productsToSave.stream()
+					.map(product -> wishlistItemMapper.toEntity(user, product))
+					.toList();
+
+			wishlistRepository.saveAll(newWishlistEntities);
+		}
+
+		return getUserWishlist(user.getId());
+	}
+
+
+	@Transactional
+	public WishlistDto toggleToWishlist(User user, UUID productId) {
 		if (wishlistRepository.existsByUserIdAndProductId(user.getId(), productId)) {
-			throw new IllegalStateException("Product is already in the wishlist");
+			wishlistRepository.deleteByUserIdAndProductId(user.getId(), productId);
+			return getUserWishlist(user.getId());
 		}
 
 		var product = productRepository.findById(productId)
 				.orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-		var wishlist = wishlistMapper.toEntity(user, product);
+		wishlistRepository.save(wishlistItemMapper.toEntity(user, product));
 
-		Wishlist saved = wishlistRepository.save(wishlist);
-		return wishlistMapper.toDto(saved);
+		return getUserWishlist(user.getId());
 	}
 
 	@Transactional
-	public void removeFromWishlist(UUID userId, UUID productId) {
-		Wishlist wishlist = wishlistRepository.findByUserIdAndProductId(userId, productId)
+	public WishlistDto removeFromWishlist(UUID userId, UUID productId) {
+		var wishlist = wishlistRepository.findByUserIdAndProductId(userId, productId)
 				.orElseThrow(() -> new EntityNotFoundException("Item not found in wishlist"));
+
 		wishlistRepository.delete(wishlist);
+		return getUserWishlist(userId);
+	}
+
+	@Transactional
+	public void clearWishlist(UUID userId) {
+		wishlistRepository.deleteByUserId(userId);
 	}
 }

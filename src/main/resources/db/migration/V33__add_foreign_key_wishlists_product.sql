@@ -1,0 +1,2 @@
+ALTER TABLE wishlists
+    ADD CONSTRAINT FK_WISHLISTS_ON_PRODUCT FOREIGN KEY (product_id) REFERENCES products (id);

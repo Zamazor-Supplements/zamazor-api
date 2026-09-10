@@ -1,14 +1,16 @@
 package com.zamazor.market.modules.product.models.entity;
 
-import com.zamazor.market.modules.catalog.exception.OutOfStockException;
 import com.zamazor.market.modules.catalog.models.entity.CartItem;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SoftDelete;
+import org.hibernate.annotations.SoftDeleteType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +23,8 @@ import java.util.UUID;
 @ToString(exclude = {"store", "category"})
 @Entity
 @Table(name = "products")
+@EntityListeners(AuditingEntityListener.class)
+@SoftDelete(strategy = SoftDeleteType.TIMESTAMP, columnName = "deleted_at")
 public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -62,33 +66,15 @@ public class Product {
 
 	@Version
 	@Builder.Default
-	@Column(name = "version", nullable = false)
 	private Long version = 0L;
 
 	@CreatedDate
-	@Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-	private LocalDateTime createdAt;
+	private Instant createdAt;
 
 	@LastModifiedDate
-	@Column(name = "modified_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-	private LocalDateTime modifiedAt;
+	private Instant modifiedAt;
 
-	@PreUpdate
-	public void preUpdate() {
-		modifiedAt = LocalDateTime.now();
-	}
-
-	public void deductStock(int quantity) {
-		if (this.stockQuantity < quantity) {
-			throw new OutOfStockException("Not enough stock for: " + this.name);
-		}
-		this.stockQuantity -= quantity;
-	}
-
-	public void restoreStock(Integer quantity) {
-		if (quantity == null || quantity <= 0) {
-			throw new IllegalArgumentException("Quantity to restore must be greater than zero");
-		}
-		this.stockQuantity += quantity;
+	public int availableQuantity() {
+		return this.stockQuantity - this.reservedQuantity;
 	}
 }

@@ -1,11 +1,12 @@
 package com.zamazor.market.modules.product.exception;
 
+import com.zamazor.market.shared.exception.DomainException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ProductNotFoundException extends RuntimeException {
-	public ProductNotFoundException(String message) {
-		super(message);
+import java.util.UUID;
+
+public class ProductNotFoundException extends DomainException {
+	public ProductNotFoundException(UUID id) {
+		super("Product not found with id: %s".formatted(id), HttpStatus.NOT_FOUND, "Product Not Found");
 	}
 }

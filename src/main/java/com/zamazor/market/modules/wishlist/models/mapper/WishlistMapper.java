@@ -1,19 +1,18 @@
 package com.zamazor.market.modules.wishlist.models.mapper;
 
-import com.zamazor.market.modules.product.models.entity.Product;
-import com.zamazor.market.modules.user.models.entity.User;
 import com.zamazor.market.modules.wishlist.models.dto.WishlistDto;
+import com.zamazor.market.modules.wishlist.models.dto.WishlistItemDto;
 import com.zamazor.market.modules.wishlist.models.entity.Wishlist;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface WishlistMapper {
-	WishlistDto toDto(Wishlist wishlist);
+	default WishlistDto toWishlistDto(List<Wishlist> wishlists) {
+		if (wishlists == null) return null;
+		return new WishlistDto(toItemDtoList(wishlists));
+	}
 
-	@Mapping(target = "id", ignore = true)
-	@Mapping(target = "user", source = "user")
-	@Mapping(target = "product", source = "product")
-	@Mapping(target = "createdAt", ignore = true)
-	Wishlist toEntity(User user, Product product);
+	List<WishlistItemDto> toItemDtoList(List<Wishlist> wishlists);
 }

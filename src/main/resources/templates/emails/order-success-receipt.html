@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Payment Confirmed - Receipt</title>
+</head>
+<body
+		style="background-color: #f3f4f6; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1f2937; -webkit-font-smoothing: antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+       style="background-color: #f3f4f6; padding: 40px 16px;">
+	<tr>
+		<td align="center">
+			<table width="100%" max-width="570" cellpadding="0" cellspacing="0" role="presentation"
+			       style="max-width: 570px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-top: 6px solid #10b981;">
+				<tr>
+					<td style="padding: 40px 32px;">
+						<h1 th:text="${appName}"
+						    style="font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 32px 0; letter-spacing: -0.025em;">
+							CompanyName
+						</h1>
+
+						<div style="margin: 0 0 24px 0;">
+							<span
+									style="display: inline-block; background-color: #d1fae5; color: #065f46; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
+								Payment Confirmed
+							</span>
+						</div>
+
+						<h2 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 16px 0; letter-spacing: -0.025em;">
+							Thank you for your purchase!
+						</h2>
+						<p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 12px 0;">
+							We have successfully processed your payment via Stripe. Your order is now being processed by
+							our warehouse logistics team and will prepare for shipping shortly.
+						</p>
+						<p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 32px 0;">
+							A summary of your transaction details and itemized receipt can be found below:
+						</p>
+
+						<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+						       style="border: 1px solid #e5e7eb; border-radius: 12px; margin: 0 0 32px 0; overflow: hidden;">
+							<tr style="background-color: #f9fafb;">
+								<td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+									<span style="font-size: 14px; font-weight: 600; color: #374151;">Receipt Summary</span>
+								</td>
+								<td align="right" style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+									<span th:text="'#' + ${orderId}"
+									      style="font-size: 14px; font-weight: 500; color: #6b7280;">#10492</span>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2" style="padding: 20px;">
+									<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+										<!--/*@thymesVar id="item" type="com.zamazor.market.modules.catalog.models.dto.OrderItemDto"*/-->
+										<tr th:each="item : ${items}">
+											<td th:text="${item.product().name()} + ' (x' + ${item.quantity()} + ')'"
+											    style="font-size: 14px; color: #4b5563; padding-bottom: 10px;">Product
+												Name (x1)
+											</td>
+											<td align="right" th:text="${item.product().price()} + ' MAD'"
+											    style="font-size: 14px; font-weight: 500; color: #111827; padding-bottom: 10px;">
+												0.00 MAD
+											</td>
+										</tr>
+										<tr>
+											<td style="font-size: 15px; font-weight: 700; color: #111827; padding-top: 10px; border-top: 1px dashed #e5e7eb;">
+												Amount Paid:
+											</td>
+											<td align="right" th:text="${totalAmount}"
+											    style="font-size: 16px; font-weight: 700; color: #10b981; padding-top: 10px; border-top: 1px dashed #e5e7eb;">
+												0.00 MAD
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+
+						<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+						       style="background-color: #f9fafb; border-radius: 12px; border: 1px solid #f3f4f6; margin: 0 0 32px 0;">
+							<tr>
+								<td style="padding: 20px;">
+									<p style="font-size: 14px; font-weight: 600; color: #374151; margin: 0 0 8px 0;">
+										Delivery Questions?
+									</p>
+									<p style="font-size: 14px; line-height: 1.5; color: #6b7280; margin: 0 0 16px 0;">
+										If you need to update your tracking delivery address profile or have issues with
+										fulfillment timelines, please contact support:
+									</p>
+
+									<table cellpadding="0" cellspacing="0" role="presentation">
+										<tr>
+											<td style="font-size: 14px; color: #4b5563; padding-bottom: 6px; padding-right: 12px;">
+												<strong>Email:</strong></td>
+											<td style="font-size: 14px; padding-bottom: 6px;">
+												<a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}"
+												   style="color: #2563eb; text-decoration: none; font-weight: 500;">support@domain.com</a>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+
+						<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 0 0 24px 0;"/>
+						<p style="font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center; margin: 0;">
+							&copy; <span th:text="${year}">2026</span> <span th:text="${appName}">CompanyName</span>.
+							All rights reserved.
+						</p>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

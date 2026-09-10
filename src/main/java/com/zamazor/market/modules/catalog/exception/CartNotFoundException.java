@@ -1,11 +1,10 @@
 package com.zamazor.market.modules.catalog.exception;
 
+import com.zamazor.market.shared.exception.DomainException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class CartNotFoundException extends RuntimeException {
-	public CartNotFoundException(String message) {
-		super(message);
+public class CartNotFoundException extends DomainException {
+	public CartNotFoundException() {
+		super("Cart empty or missing", HttpStatus.NOT_FOUND, "Cart Not Found");
 	}
 }
