@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD email_verified_at TIMESTAMP(6) WITHOUT TIME ZONE;

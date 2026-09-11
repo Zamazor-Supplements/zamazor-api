@@ -44,9 +44,9 @@ public class SecurityConfiguration {
 						.requestMatchers("/webhooks/**").permitAll()
 						.requestMatchers("/auth/me").authenticated()
 						.requestMatchers("/auth/**").permitAll()
-						.requestMatchers(HttpMethod.GET, "/products/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/products/bulk").permitAll()
-						.requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
+						.requestMatchers("/dashboard/**").hasRole("ADMIN")
 						.anyRequest().authenticated()
 				)
 				.exceptionHandling(exceptions -> exceptions

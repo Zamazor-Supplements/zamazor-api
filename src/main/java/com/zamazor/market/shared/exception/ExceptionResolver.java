@@ -1,6 +1,7 @@
 package com.zamazor.market.shared.exception;
 
 import com.zamazor.market.media.exception.MediaStorageException;
+import com.zamazor.market.modules.auth.exception.UnverifiedEmailException;
 import com.zamazor.market.modules.catalog.exception.IllegalOrderTransitionException;
 import com.zamazor.market.modules.auth.exception.EmailAlreadyInUseException;
 import com.zamazor.market.modules.auth.exception.UnauthorizedException;
@@ -55,6 +56,7 @@ public class ExceptionResolver extends ResponseEntityExceptionHandler {
 			case EmailAlreadyInUseException e -> createProblemDetail(409, e.getMessage(), "Email already in use");
 			case UnauthorizedException e -> createProblemDetail(401, e.getMessage(), "Authentication Required");
 			case InsufficientAuthenticationException e -> createProblemDetail(401, e.getMessage(), "Authentication Required");
+			case UnverifiedEmailException e -> createProblemDetail(403, e.getMessage(), "Email Verification Required");
 			case UserNotFoundException e -> createProblemDetail(404, e.getMessage(), "User Not Found");
 			case ProductNotFoundException e -> createProblemDetail(404, e.getMessage(), "Product Not Found");
 			case CategoryNotFoundException e -> createProblemDetail(404, e.getMessage(), "Category Not Found");

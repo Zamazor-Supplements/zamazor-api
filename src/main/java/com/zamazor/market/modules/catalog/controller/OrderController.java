@@ -37,23 +37,21 @@ public class OrderController {
 			@RequestParam(defaultValue = "10") int size,
 			@RequestParam(defaultValue = "createdAt,desc") String[] sort
 	) {
-		String sortProperty = sort[0];
-		Sort.Direction direction = Sort.Direction.DESC;
-
-		if (sort.length > 1) {
-			direction = Sort.Direction.fromString(sort[1]);
-		}
-
-		if ("totalAmount".equals(sortProperty)) {
-			sortProperty = "total";
-		} else if ("userFullName".equals(sortProperty)) {
-			sortProperty = "user.fullName";
-		}
+		String sortProperty = switch (sort[0]) {
+			case "totalAmount" -> "total";
+			case "userFullName" -> "user.fullName";
+			case "createdAt", "status" -> sort[0];
+			default -> "createdAt";
+		};
+		var direction = sort.length > 1 ?
+				Sort.Direction.fromOptionalString(sort[1]).orElse(Sort.Direction.DESC) :
+				Sort.Direction.DESC;
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
 		return ResponseEntity.ok(orderService.getAll(userFullName, status, pageable));
 	}
 
+	@PreAuthorize("@orderSecurity.isEmailVerified(principal)")
 	@GetMapping("/me")
 	public ResponseEntity<PageResponse<OrderDto>> getMyOrders(
 			@AuthenticationPrincipal User user,
@@ -64,33 +62,35 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.getByUserId(user.getId(), pageable));
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("@orderSecurity.isOwnerOrAdmin(#orderId, principal)")
 	@GetMapping("/{orderId}")
 	public ResponseEntity<OrderDto> getOrderById(@PathVariable UUID orderId) {
 		OrderDto order = orderService.getById(orderId);
 		return ResponseEntity.ok(order);
 	}
 
+	@PreAuthorize("@orderSecurity.isEmailVerified(principal)")
 	@PostMapping("/checkout")
 	public ResponseEntity<OrderDto> checkout(@AuthenticationPrincipal User user, @Valid @RequestBody CheckoutRequest request) {
 		return ResponseEntity.ok(orderPaymentService.checkout(user, request));
 	}
 
-	@GetMapping("/checkout/{orderId}/pay")
+	@PreAuthorize("@orderSecurity.isOwnerOrAdmin(#orderId, principal)")
+	@PostMapping("/checkout/{orderId}/pay")
 	public ResponseEntity<PaymentSessionResponse> payOrder(@PathVariable UUID orderId) {
 		return ResponseEntity.ok(orderPaymentService.regeneratePaymentLink(orderId));
 	}
 
-	@PostMapping("/checkout/{orderId}/verify")
+	@PreAuthorize("@orderSecurity.isOwnerOrAdmin(#orderId, principal)")
+	@GetMapping("/checkout/{orderId}/verify")
 	public ResponseEntity<OrderDto> verifyPaymentStatus(
-			@PathVariable UUID orderId,
-			@RequestParam("sessionId") String sessionId,
-			@AuthenticationPrincipal User user
+			@PathVariable UUID orderId
 	) {
-		OrderDto verifiedOrder = orderService.verifyOrderPayment(orderId, sessionId, user);
+		OrderDto verifiedOrder = orderService.verifyOrderPayment(orderId);
 		return ResponseEntity.ok(verifiedOrder);
 	}
 
+	@PreAuthorize("@orderSecurity.isOwnerOrAdmin(#orderId, principal)")
 	@PostMapping("/{orderId}/cancel")
 	public ResponseEntity<OrderDto> cancelOrder(@PathVariable UUID orderId) {
 		return ResponseEntity.ok(orderService.cancelOrder(orderId));

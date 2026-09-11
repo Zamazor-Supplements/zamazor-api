@@ -58,7 +58,7 @@ public class RefundEventHandler implements StripeEventHandler {
 				if (RefundStatus.SUCCEEDED.equals(record.getStatus())) {
 					// Replay/no-op: already applied. The order's refunded amount is
 					// monotonic, so recomputing would change nothing.
-					log.info("Refund {} already SUCCEEDED — no-op", refund.getId());
+					log.debug("Refund {} already SUCCEEDED — no-op", refund.getId());
 					return order.getId();
 				}
 				record.markSucceeded();
@@ -68,7 +68,7 @@ public class RefundEventHandler implements StripeEventHandler {
 					for (StockRestoreDto item : itemsToRestore) {
 						productRepository.restoreAvailability(item.productId(), item.quantity());
 					}
-					log.info("Restored stock for {} items due to full refund on order {}", itemsToRestore.size(), order.getId());
+					log.debug("Restored stock for {} items due to full refund on order {}", itemsToRestore.size(), order.getId());
 				}
 
 				log.info("Refund {} succeeded — order {} refunded {} minor units",

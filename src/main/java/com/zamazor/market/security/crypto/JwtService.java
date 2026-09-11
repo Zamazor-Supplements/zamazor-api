@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -21,6 +22,7 @@ import java.util.function.Function;
 public class JwtService {
 	private final JwtProperties jwtProperties;
 	private final JwtKeyProvider keyProvider;
+	private final Clock clock;
 
 	public String extractAccessUsername(String token) {
 		return extractUsername(token, keyProvider.getAccessKey());
@@ -76,7 +78,7 @@ public class JwtService {
 	}
 
 	private String buildToken(Map<String, Object> extraClaims, UserDetails user, Duration duration, SecretKey signingKey) {
-		Instant now = Instant.now();
+		Instant now = Instant.now(clock);
 		Instant expiryLimit = now.plus(duration);
 
 		return Jwts.builder()

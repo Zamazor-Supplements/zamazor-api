@@ -1,5 +1,7 @@
 package com.zamazor.market.payment.service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,7 @@ public class WebhookService {
 	private final List<StripeEventHandler> handlers;
 	private final StripeWebhookEventRepository events;
 	private final StripeWebhookEventMapper stripeWebhookEventMapper;
+	private final Clock clock;
 
 	/**
 	 * Record-then-dispatch, all in ONE transaction. A transient failure rolls back
@@ -54,21 +57,21 @@ public class WebhookService {
 				.orElse(null);
 
 		if (handler == null) {
-			record.markUnhandled();
+			record.markUnhandled(Instant.now(clock));
 			log.info("No handler for Stripe event type {}", event.getType());
 			return DispatchOutcome.UNHANDLED;
 		}
 
 		try {
 			UUID orderId = handler.handle(event);
-			record.markProcessed(orderId);
+			record.markProcessed(orderId, Instant.now(clock));
 			return DispatchOutcome.PROCESSED;
 		} catch (ObjectOptimisticLockingFailureException e) {
 			log.warn("Stripe event {} optimistic-lock contention (order updated concurrently) — retry will reprocess",
 					event.getId(), e);
 			throw e;                              // → 503 → Stripe retries
 		} catch (WebhookMismatchException e) {
-			record.markRejected(e.getMessage());
+			record.markRejected(e.getMessage(), Instant.now(clock));
 			log.error("Stripe event {} permanently rejected: {}", event.getId(), e.getMessage());
 			return DispatchOutcome.REJECTED;      // 200 — do not retry, keep the record
 		} catch (RuntimeException e) {

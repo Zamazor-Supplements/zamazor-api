@@ -56,7 +56,7 @@ public class PaymentIntentTerminalHandler implements StripeEventHandler {
 			log.info("Order {} -> FAILED via Stripe event {} ({})",
 					order.getId(), event.getId(), event.getType());
 		} else {
-			log.info("Order {} already PAID — ignoring terminal intent event {}",
+			log.debug("Order {} already PAID — ignoring terminal intent event {}",
 					order.getId(), intent.getId());
 		}
 		return order.getId();

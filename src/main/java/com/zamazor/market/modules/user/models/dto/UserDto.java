@@ -10,6 +10,7 @@ public record UserDto(
 		String email,
 		String fullName,
 		AddressDto address,
-		Role role
+		Role role,
+		boolean emailVerified
 ) {
 }

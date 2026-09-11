@@ -54,4 +54,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
 			 LIMIT :batch
 			""", nativeQuery = true)
 	List<Order> findExpiredPending(@Param("cutoff") Instant cutoff, @Param("batch") int batch);
+
+	boolean existsByIdAndUserId(UUID id, UUID userId);
 }

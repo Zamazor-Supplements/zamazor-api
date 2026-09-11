@@ -9,3 +9,5 @@ CREATE TABLE users
     cart_id    UUID,
     CONSTRAINT pk_users PRIMARY KEY (id)
 );
+
+CREATE INDEX idx_user_email ON users (email);

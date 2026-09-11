@@ -1,0 +1,5 @@
+ALTER TABLE users
+    ADD updated_at TIMESTAMP(6) WITHOUT TIME ZONE;
+
+ALTER TABLE users
+    ALTER COLUMN updated_at SET NOT NULL;

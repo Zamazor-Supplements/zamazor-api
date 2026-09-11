@@ -49,21 +49,21 @@ public class StripeWebhookEvent {
 
 	private Instant processedAt;
 
-	public void markProcessed(UUID orderId) {
+	public void markProcessed(UUID orderId, Instant processedAt) {
 		this.orderId = orderId;
 		this.outcome = Outcome.PROCESSED;
-		this.processedAt = Instant.now();
+		this.processedAt = processedAt;
 	}
 
-	public void markUnhandled() {
+	public void markUnhandled(Instant processedAt) {
 		this.outcome = Outcome.UNHANDLED;
-		this.processedAt = Instant.now();
+		this.processedAt = processedAt;
 	}
 
-	public void markRejected(String reason) {
+	public void markRejected(String reason, Instant processedAt) {
 		this.outcome = Outcome.REJECTED;
 		this.failureReason = truncate(reason);
-		this.processedAt = Instant.now();
+		this.processedAt = processedAt;
 	}
 
 	private static String truncate(String s) {

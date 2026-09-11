@@ -28,8 +28,8 @@ import java.util.UUID;
 public class ProductController {
 	private final ProductService productService;
 
-	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping
 	public ResponseEntity<ProductDto> create(
 			@Valid @ModelAttribute CreateProductRequest request,
 			@RequestPart MultipartFile image,
@@ -98,8 +98,8 @@ public class ProductController {
 		return ResponseEntity.ok(productService.search(q, categoryId, minPrice, maxPrice, pageable));
 	}
 
-	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
+	@PutMapping("/{id}")
 	public ResponseEntity<ProductDto> update(
 			@PathVariable UUID id,
 			@Valid @ModelAttribute UpdateProductRequest request,
@@ -108,8 +108,8 @@ public class ProductController {
 		return ResponseEntity.ok(productService.update(id, request, image));
 	}
 
-	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable UUID id) {
 		productService.delete(id);
 		return ResponseEntity.noContent().build();

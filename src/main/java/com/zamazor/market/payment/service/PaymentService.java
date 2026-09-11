@@ -17,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -26,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 public class PaymentService {
 	private final ApplicationProperties application;
 	private final OrderRepository orderRepository;
+	private final Clock clock;
 
 	public Session createCheckoutSession(Order order) {
 		String orderId = order.getId().toString();
@@ -75,7 +77,7 @@ public class PaymentService {
 									.setEnabled(true)
 									.build()
 					)
-					.setExpiresAt(Instant.now().plus(30, ChronoUnit.MINUTES).getEpochSecond());
+					.setExpiresAt(Instant.now(clock).plus(30, ChronoUnit.MINUTES).getEpochSecond());
 //			Planned to be implemented later; causes different totals between stripe and application DB
 			// Inline shipping options — zero extra network calls to Stripe
 //					.addShippingOption(
@@ -154,7 +156,7 @@ public class PaymentService {
 					Session oldSession = Session.retrieve(oldSessionId);
 					if ("open".equals(oldSession.getStatus())) {
 						oldSession.expire();
-						log.info("Successfully expired old Stripe checkout session {} for order {}", oldSessionId, orderId);
+						log.debug("Successfully expired old Stripe checkout session {} for order {}", oldSessionId, orderId);
 					}
 				} catch (StripeException e) {
 					log.warn("Could not expire previous Stripe session {}: {}", oldSessionId, e.getMessage());
@@ -187,6 +189,15 @@ public class PaymentService {
 			Refund.create(params);
 		} catch (StripeException e) {
 			throw new PaymentGatewayException("Failed to process refund with Stripe: " + e.getMessage());
+		}
+	}
+
+	public Session expireCheckoutSession(String sessionId) {
+		try {
+			Session session = Session.retrieve(sessionId);
+			return session.expire();
+		} catch (StripeException e) {
+			throw new RuntimeException("Failed to expire Stripe checkout session: " + e.getMessage(), e);
 		}
 	}
 

@@ -8,9 +8,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +26,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+		@Index(name = "idx_user_email", columnList = "email")
+})
 @Inheritance(strategy = InheritanceType.JOINED)
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -35,8 +42,14 @@ public class User implements UserDetails {
 	@Column(unique = true, nullable = false)
 	private String email;
 
+	@Nullable
+	@Builder.Default
+	@Column(name = "email_verified_at")
+	private Instant emailVerifiedAt = null;
+
+	@Builder.Default
 	@Column(name = "is_admin", nullable = false)
-	private Boolean isAdmin;
+	private boolean isAdmin = false;
 
 	@Column(nullable = false)
 	private String password;
@@ -90,5 +103,21 @@ public class User implements UserDetails {
 		if (address.getUser() != null) {
 			address.setUser(this);
 		}
+	}
+
+	@LastModifiedDate
+	@Column(name = "updated_at", nullable = false)
+	private Instant updatedAt;
+
+	@CreatedDate
+	@Column(name = "created_at", nullable = false)
+	private Instant createdAt;
+
+	public void markEmailVerified(Instant verifiedAt) {
+		this.emailVerifiedAt = verifiedAt;
+	}
+
+	public boolean isEmailVerified() {
+		return this.emailVerifiedAt != null;
 	}
 }

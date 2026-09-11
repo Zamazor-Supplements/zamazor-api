@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.Instant;
 
 @Slf4j
@@ -18,10 +19,11 @@ public class PendingPaymentSweeper {
 	private final OrderPolicyProperties policy;
 	private final OrderRepository orderRepository;
 	private final OrderService orderService;
+	private final Clock clock;
 
 	@Scheduled(fixedDelay = 60_000, initialDelay = 30_000)
 	public void expireStaleReservations() {
-		var cutoff = Instant.now().minus(policy.paymentHold());
+		var cutoff = Instant.now(clock).minus(policy.paymentHold());
 
 		orderRepository.findExpiredPending(cutoff, 50)
 				.forEach(order -> orderService.cancelOrder(order.getId(), PaymentStatus.EXPIRED));

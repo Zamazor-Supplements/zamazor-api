@@ -236,6 +236,10 @@ public class Order {
 		this.status = newStatus;
 	}
 
+	public void incrementPaymentAttempts() {
+		this.paymentAttemptCount++;
+	}
+
 	public boolean acceptsPayment() {
 		return status == OrderStatus.PENDING;
 	}
