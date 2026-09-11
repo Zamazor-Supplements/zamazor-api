@@ -1,31 +1,30 @@
-package com.zamazor.market.payment.service;
+package com.zamazor.market.modules.catalog.service;
 
 import com.zamazor.market.modules.billing.models.entity.PaymentStatus;
 import com.zamazor.market.modules.catalog.repository.OrderRepository;
-import com.zamazor.market.modules.catalog.service.OrderService;
 import com.zamazor.market.payment.config.OrderPolicyProperties;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
 
-@Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
-public class PendingPaymentSweeper {
-	private final OrderPolicyProperties policy;
+public class OrderExpirationService {
 	private final OrderRepository orderRepository;
 	private final OrderService orderService;
+	private final OrderPolicyProperties policy;
 	private final Clock clock;
 
-	@Scheduled(fixedDelay = 60_000, initialDelay = 30_000)
+	@Transactional
 	public void expireStaleReservations() {
 		var cutoff = Instant.now(clock).minus(policy.paymentHold());
+		var eligibleOrders = orderRepository.findOrdersEligibleForCancellation(cutoff, 50);
 
-		orderRepository.findExpiredPending(cutoff, 50)
-				.forEach(order -> orderService.cancelOrder(order.getId(), PaymentStatus.EXPIRED));
+		for (var order : eligibleOrders) {
+			orderService.cancelOrder(order.getId(), PaymentStatus.EXPIRED);
+		}
 	}
 }

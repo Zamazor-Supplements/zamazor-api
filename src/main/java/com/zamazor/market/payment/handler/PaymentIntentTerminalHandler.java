@@ -2,6 +2,7 @@ package com.zamazor.market.payment.handler;
 
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
+import com.zamazor.market.mail.event.OrderStatusChangedEvent;
 import com.zamazor.market.modules.catalog.models.dto.ReserveLine;
 import com.zamazor.market.modules.catalog.models.entity.Order;
 import com.zamazor.market.modules.catalog.models.entity.OrderStatus;
@@ -12,6 +13,7 @@ import com.zamazor.market.payment.util.StripeObjects;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -23,6 +25,7 @@ import java.util.UUID;
 public class PaymentIntentTerminalHandler implements StripeEventHandler {
 	private final OrderRepository orders;
 	private final ProductRepository productRepository;
+	private final ApplicationEventPublisher publisher;
 
 	@Override
 	public Set<String> eventTypes() {
@@ -55,6 +58,7 @@ public class PaymentIntentTerminalHandler implements StripeEventHandler {
 
 			log.info("Order {} -> FAILED via Stripe event {} ({})",
 					order.getId(), event.getId(), event.getType());
+			publisher.publishEvent(new OrderStatusChangedEvent(order));
 		} else {
 			log.debug("Order {} already PAID — ignoring terminal intent event {}",
 					order.getId(), intent.getId());

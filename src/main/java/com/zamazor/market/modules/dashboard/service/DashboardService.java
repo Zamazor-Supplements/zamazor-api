@@ -34,7 +34,7 @@ public class DashboardService {
 	);
 	private final CategoryRepository categoryRepository;
 
-	public DashboardOverviewDto getDashboardOverview() {
+	public OverviewMetrics getDashboardOverview() {
 		List<Order> allOrders = orderRepository.findAll();
 		List<Product> allProducts = productRepository.findAll();
 
@@ -68,20 +68,20 @@ public class DashboardService {
 				.map(dashboardMapper::toLowStockProductDto)
 				.toList();
 
-		List<CategorySummaryDto> categorySummary = allProducts.stream()
+		List<CategorySummary> categorySummary = allProducts.stream()
 				.collect(Collectors.groupingBy(
 						p -> p.getCategory() != null ? p.getCategory().getLabel() : "Uncategorized",
 						Collectors.counting()
 				))
 				.entrySet().stream()
-				.map(e -> new CategorySummaryDto(e.getKey(), e.getValue()))
-				.sorted(Comparator.comparing(CategorySummaryDto::count).reversed())
+				.map(e -> new CategorySummary(e.getKey(), e.getValue()))
+				.sorted(Comparator.comparing(CategorySummary::count).reversed())
 				.limit(5)
 				.toList();
 
 		List<TopProductDto> topProducts = aggregateTopProducts(settledOrders, allProducts);
 
-		return new DashboardOverviewDto(
+		return new OverviewMetrics(
 				totalSales,
 				averageOrderValue,
 				totalOrders,
@@ -96,15 +96,15 @@ public class DashboardService {
 		);
 	}
 
-	public List<CategoryAnalyticsDto> getCategoriesWithCounts() {
+	public List<CategoryMetrics> getCategoriesWithCounts() {
 		var projections = categoryRepository.findAllWithProductCounts();
 		return dashboardMapper.toAnalyticsDtoList(projections);
 	}
 
-	public ProductAnalyticsDto getProductAnalytics() {
+	public ProductMetrics getProductAnalytics() {
 		ProductRepository.MetricsSummary summary = productRepository.getMetricsSummary();
 
-		return new ProductAnalyticsDto(
+		return new ProductMetrics(
 				summary.getTotalProducts(),
 				summary.getTotalCategories(),
 				productRepository.countLowStockProducts(LOW_STOCK_THRESHOLD),

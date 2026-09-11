@@ -1,4 +1,4 @@
-package com.zamazor.market.modules.product.exception;
+package com.zamazor.market.modules.catalog.exception;
 
 public class OrderRefundException extends RuntimeException {
 	public OrderRefundException(String message) {

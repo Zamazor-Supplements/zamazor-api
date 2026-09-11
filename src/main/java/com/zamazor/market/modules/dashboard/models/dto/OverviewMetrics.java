@@ -3,7 +3,7 @@ package com.zamazor.market.modules.dashboard.models.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record DashboardOverviewDto(
+public record OverviewMetrics(
 		BigDecimal totalSales,
 		BigDecimal averageOrderValue,
 		long totalOrders,
@@ -13,7 +13,7 @@ public record DashboardOverviewDto(
 		long inFlightOrders,
 		List<RecentOrderDto> recentOrders,
 		List<LowStockProductDto> lowStockProducts,
-		List<CategorySummaryDto> categorySummary,
+		List<CategorySummary> categorySummary,
 		List<TopProductDto> topProducts
 ) {
 }

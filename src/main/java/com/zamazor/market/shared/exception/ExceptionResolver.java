@@ -7,14 +7,13 @@ import com.zamazor.market.modules.auth.exception.EmailAlreadyInUseException;
 import com.zamazor.market.modules.auth.exception.UnauthorizedException;
 import com.zamazor.market.modules.catalog.exception.*;
 import com.zamazor.market.modules.product.exception.CategoryNotFoundException;
-import com.zamazor.market.modules.product.exception.OrderCancellationException;
-import com.zamazor.market.modules.product.exception.OrderRefundException;
 import com.zamazor.market.modules.product.exception.ProductNotFoundException;
 import com.zamazor.market.modules.product.exception.CategoryAlreadyExistsException;
 import com.zamazor.market.modules.user.exception.UserNotFoundException;
 import com.zamazor.market.payment.exception.PaymentGatewayException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
@@ -38,8 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ControllerAdvice
 public class ExceptionResolver extends ResponseEntityExceptionHandler {
+	private static final String UNEXPECTED_ERROR_DETAIL = "An unexpected error occurred. Please try again later.";
 
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleSecurityException(Exception exception) {
@@ -75,7 +76,10 @@ public class ExceptionResolver extends ResponseEntityExceptionHandler {
 			case AddressNotFoundException e -> createProblemDetail(404, e.getMessage(), "Address Not Found");
 			case UnauthorizedOrderException e -> createProblemDetail(403, e.getMessage(), "Unauthorized To Modify Order");
 			case PaymentGatewayException e -> createProblemDetail(502, e.getMessage(), "Payment Gateway Error");
-			default -> createProblemDetail(500, exception.getMessage(), "Unknown internal server error");
+			default -> {
+				log.error("Unhandled exception reached the global handler", exception);
+				yield createProblemDetail(500, UNEXPECTED_ERROR_DETAIL, "Unknown internal server error");
+			}
 		};
 	}
 

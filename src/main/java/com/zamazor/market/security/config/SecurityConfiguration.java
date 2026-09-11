@@ -42,7 +42,7 @@ public class SecurityConfiguration {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers("/webhooks/**").permitAll()
-						.requestMatchers("/auth/me").authenticated()
+						.requestMatchers("/auth/me", "/auth/send-verification").authenticated()
 						.requestMatchers("/auth/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/products/bulk").permitAll()
@@ -65,6 +65,7 @@ public class SecurityConfiguration {
 						.deleteCookies(CookieUtility.REFRESH_TOKEN_COOKIE_NAME)
 						.logoutSuccessHandler(logoutSuccessHandler)
 				)
+				.securityContext(sc -> sc.requireExplicitSave(false))
 				.build();
 	}
 
